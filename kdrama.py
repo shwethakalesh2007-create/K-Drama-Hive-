@@ -1,86 +1,133 @@
 import pandas as pd
+import random
 
-df = pd.read_csv("KDrama.csv")
-import pandas as pd
-
-df = pd.read_csv("KDrama.csv")
+df = pd.read_csv("kdrama.csv")
 
 print("===================================")
 print("          🎬 K-DRAMA HIVE")
 print("===================================")
 
-print("\n1. Search by Genre")
-print("2. Search by Title")
-print("3. Search by Trope")
-print("4. Find Something Like This Drama")
-
+print("\n1. Search by Title")
+print("2. Search by Trope")
+print("3. Find Something Like This Drama")
+print("4. Find Kdramas with Similar L5ead Characters")
+print("5. Pick a Random K-Drama")
 choice = input("\nChoose an option: ")
-# ---------------- GENRE SEARCH ----------------
 
+# ---------------- TITLE SEARCH ----------------
 if choice == "1":
+    title = input("\nEnter a Kdrama title: ").lower()
+    result = df[df["Title"].str.lower().str.contains(title)]
 
-    genre = input("\nEnter a genre: ").lower()
+    if len(result) > 0:
+        print("\n🎬 K-Drama Found:")
+        print(result.to_string(index=False))
 
-    print("\nDo you want a specific lead?")
-    print("1. Female Lead")
-    print("2. Male Lead")
-    print("3. No Preference")
+        similar = input("\nDo you want to find something similar to this drama? (yes/no): ").lower()
+        if similar == "yes":
+            print("\nComing next! 🔥")
+    else:
+        print("\nNo K-Drama found.")
 
-    lead_choice = input("\nChoose an option: ")
+# ---------------- TROPE SEARCH ----------------
+elif choice == "2":
+    trope = input("\nEnter a trope: ").lower()
+    result = df[
+        df["Trope_1"].str.lower().str.contains(trope) |
+        df["Trope_2"].str.lower().str.contains(trope) |
+        df["Trope_3"].str.lower().str.contains(trope) |
+        df["Trope_4"].str.lower().str.contains(trope)
+    ]
 
-    if lead_choice == "1":
+    if len(result) > 0:
+        print("\n🎬 K-Dramas with this trope:")
+        print(result[["Title", "Trope_1", "Trope_2", "Trope_3", "Trope_4"]].to_string(index=False))
 
-        lead_type = input(
-            "\nWhat type of female lead do you want? "
-        ).lower()
+        compare = input("\nDo you have a drama with a similar trope that you want to compare? (yes/no): ").lower()
+        if compare == "yes":
+            drama = input("\nEnter the drama title: ").lower()
+            drama_result = df[df["Title"].str.lower().str.contains(drama)]
 
-        result = df[
-            (
-                df["Genre_1"].str.lower().str.contains(genre) |
-                df["Genre_2"].str.lower().str.contains(genre) |
-                df["Genre_3"].str.lower().str.contains(genre)
-            )
-            &
-            df["Female_Lead_Type"].str.lower().str.contains(lead_type)
-        ]
+            if len(drama_result) > 0:
+                print("\n🎬 Comparison:")
+                print("\nSelected Drama:")
+                print(drama_result[["Title", "Trope_1", "Trope_2", "Trope_3", "Trope_4"]].to_string(index=False))
 
-        if len(result) > 0:
-            print("\n🎬 K-Dramas found:")
-            print(
-                result[
-                    ["Title", "Female_Lead_Type"]
-                ].to_string(index=False)
-            )
+                print("\nDramas matching your trope:")
+                print(result[["Title", "Trope_1", "Trope_2", "Trope_3", "Trope_4"]].to_string(index=False))
+            else:
+                print("\nDrama not found.")
+    else:
+        print("\nNo K-Dramas found with this trope.")
+
+# ---------------- SIMILAR DRAMA ----------------
+elif choice == "3":
+    title = input("\nEnter a Kdrama title: ").lower()
+    result = df[df["Title"].str.lower().str.contains(title)]
+
+    if len(result) > 0:
+        print("\n🎬 Drama Found:")
+        print(result.to_string(index=False))
+
+        print("\nSimilar dramas:")
+        print(result[["Similar_To_1", "Similar_To_2"]].to_string(index=False))
+    else:
+        print("\nNo K-Drama found.")
+
+# ---------------- SIMILAR LEAD CHARACTERS ----------------
+elif choice == "4":
+    drama_name = input("\nEnter a K-drama: ").lower()
+    sub_choice = input("Compare with female lead (f) or male lead (m)? ").lower()
+
+    if sub_choice in ["f", "m"]:
+        # Pick the right column
+        column = "Female_Lead_Type" if sub_choice == "f" else "Male_Lead_Type"
+
+        # Find the drama
+        result = df[df["Title"].str.lower().str.contains(drama_name)]
+        if len(result) == 0:
+            print("\nDrama not found.")
         else:
-            print("\nNo K-Dramas found.")
+            target_type = result.iloc[0][column].lower()
+            matches = df[df[column].str.lower().str.contains(target_type) &
+                         ~df["Title"].str.lower().str.contains(drama_name)]
 
-    elif lead_choice == "2":
+            if len(matches) > 0:
+                print(f"\n🎬 Dramas with {column.replace('_',' ').lower()} like {drama_name}:")
+                print(matches[["Title", column]].to_string(index=False))
+            else:
+                print("\nNo similar leads found.")
+    else:
+        print("Invalid choice.")
 
-        lead_type = input(
-            "\nWhat type of male lead do you want? "
-        ).lower()
+# ---------------- RANDOM K-DRAMA ----------------
 
-        result = df[
-            (
-                df["Genre_1"].str.lower().str.contains(genre) |
-                df["Genre_2"].str.lower().str.contains(genre) |
-                df["Genre_3"].str.lower().str.contains(genre)
-            )
-            &
-            df["Male_Lead_Type"].str.lower().str.contains(lead_type)
-        ]
+elif choice == "5":
 
-        if len(result) > 0:
-            print("\n🎬 K-Dramas found:")
-            print(
-                result[
-                    ["Title", "Male_Lead_Type"]
-                ].to_string(index=False)
-            )
-        else:
-            print("\nNo K-Dramas found.")
+    print("\n1. Random from All K-Dramas")
+    print("2. Random by Genre")
 
-    elif lead_choice == "3":
+    random_choice = input("\nChoose an option: ")
+
+    if random_choice == "1":
+
+        again = "yes"
+
+        while again == "yes":
+
+            random_drama = random.choice(df["Title"].tolist())
+
+            print("\n🎲 Your random K-Drama is:")
+            print(random_drama)
+
+            again = input(
+                "\nWant another one? (yes/no): "
+            ).lower()
+
+
+    elif random_choice == "2":
+
+        genre = input("\nEnter a genre: ").lower()
 
         result = df[
             df["Genre_1"].str.lower().str.contains(genre) |
@@ -89,11 +136,31 @@ if choice == "1":
         ]
 
         if len(result) > 0:
-            print("\n🎬 K-Dramas found:")
-            print(
-                result[
-                    ["Title", "Genre_1", "Genre_2", "Genre_3"]
-                ].to_string(index=False)
-            )
+
+            again = "yes"
+
+            while again == "yes":
+
+                random_drama = random.choice(
+                    result["Title"].tolist()
+                )
+
+                print("\n🎲 Your random K-Drama is:")
+                print(random_drama)
+
+                again = input(
+                    "\nWant another one? (yes/no): "
+                ).lower()
+
         else:
-            print("\nNo K-Dramas found.")
+            print("\nNo K-Dramas found for this genre.")
+
+
+    else:
+        print("\nInvalid option.")
+
+
+
+# ---------------- INVALID OPTION ----------------
+else:
+    print("\nInvalid option.")
