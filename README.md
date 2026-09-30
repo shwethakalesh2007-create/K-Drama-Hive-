@@ -92,7 +92,7 @@ The program will display dramas containing the selected trope.
 ### 🔄 Example: Find Something Like This Drama
 
 ```text
-Enter a Kdrama title: healer
+Enter a Kdrama title: lovely runner
 ```
 
 The program will display similar dramas from the dataset.
